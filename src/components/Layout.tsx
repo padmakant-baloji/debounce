@@ -47,7 +47,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <Activity className="w-6 h-6" aria-hidden="true" />
               <span className="font-semibold text-lg whitespace-nowrap">
-                ABBYY Performance
+                Performance
               </span>
             </Link>
 

@@ -17,7 +17,10 @@ export function useThrottle<T extends (...args: any[]) => any>(
   const lastCallTimeRef = useRef<number | null>(null);
   const lastArgsRef = useRef<Parameters<T> | null>(null);
   const isThrottledRef = useRef(false);
-  const hasTrailingExecutedRef = useRef(false); // Track trailing execution
+  const fnRef = useRef(fn);
+
+  // Keep fnRef always up-to-date to avoid stale closure issues
+  fnRef.current = fn;
 
   return useCallback(
     (...args: Parameters<T>) => {
@@ -26,10 +29,9 @@ export function useThrottle<T extends (...args: any[]) => any>(
       const shouldCallNow = leading && (!isThrottledRef.current || (timeSinceLastCall !== null && timeSinceLastCall >= wait));
 
       if (shouldCallNow) {
-        fn(...args);
+        fnRef.current(...args);
         lastCallTimeRef.current = now;
         isThrottledRef.current = true;
-        hasTrailingExecutedRef.current = false; // Reset since leading call happened
       } else if (trailing) {
         lastArgsRef.current = args;
       }
@@ -40,17 +42,16 @@ export function useThrottle<T extends (...args: any[]) => any>(
           isThrottledRef.current = false;
 
           if (trailing && lastArgsRef.current) {
-            fn(...lastArgsRef.current);
+            fnRef.current(...lastArgsRef.current);
             lastArgsRef.current = null;
 
-            if (onTrailing && !hasTrailingExecutedRef.current) {
-              onTrailing(); // ✅ Only run if a trailing execution actually happened
-              hasTrailingExecutedRef.current = true;
+            if (onTrailing) {
+              onTrailing(); // ✅ Only trigger if trailing execution happened
             }
           }
         }, wait);
       }
     },
-    [fn, wait, leading, trailing, onTrailing]
+    [leading, trailing, wait, onTrailing] // ✅ fn is no longer in dependencies (avoids stale closure issues)
   );
 }

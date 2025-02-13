@@ -11,7 +11,7 @@ const routes = [
   { path: "/trailing-throttle", label: "T-Throttle" },
   { path: "/leading-trailing-throttle", label: "L/T-Throttle" },
   { path: "/combined-techniques", label: "Combined" },
-  { path: "/memory-leak", label: "Memory" },
+  // { path: "/memory-leak", label: "Memory" },
   { path: "/documentation", label: "Documentation" },
 ];
 

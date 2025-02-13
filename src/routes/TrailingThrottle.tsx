@@ -127,7 +127,11 @@ export default function TrailingThrottle() {
 
   // Input Value Tracking
   const [inputValue, setInputValue] = useState('');
+  const [inputValueT, setInputValueT] = useState('');
+
   const [displayValue, setDisplayValue] = useState('');
+  const [displayValueT, setDisplayValueT] = useState('');
+
   const [inputStats, setInputStats] = useState({
     problem: { executionTime: 0, memoryUsage: 0, eventCount: 0 },
     solution: { executionTime: 0, memoryUsage: 0, eventCount: 0 },
@@ -158,7 +162,7 @@ export default function TrailingThrottle() {
     const memoryStart = performance.memory?.usedJSHeapSize || 0;
     
     // Update display value with the latest value
-    setDisplayValue(value);
+    setDisplayValueT(value);
     setIsThrottling(false);
     
     const endTime = performance.now();
@@ -175,7 +179,7 @@ export default function TrailingThrottle() {
     trailing: true,
     onTrailing: () => {
       // Ensure we display the very latest value
-      setDisplayValue(pendingValueRef.current);
+      setDisplayValueT(pendingValueRef.current);
       setIsThrottling(false);
     }
   });
@@ -281,6 +285,7 @@ export default function TrailingThrottle() {
                     className="w-full pl-10 pr-4 py-2 border rounded-lg"
                     placeholder="Regular input..."
                     onChange={(e) => handleRegularInput(e.target.value)}
+                    value={inputValue}
                   />
                 </div>
                 <div className="bg-white rounded-lg shadow-md p-4">
@@ -301,12 +306,12 @@ export default function TrailingThrottle() {
                     placeholder="Throttled input (1s)..."
                     onChange={(e) => {
                       const value = e.target.value;
-                      setInputValue(value);
+                      setInputValueT(value);
                       pendingValueRef.current = value;
                       setIsThrottling(true);
                       handleThrottledInput(value);
                     }}
-                    value={inputValue}
+                    value={inputValueT}
                   />
                   {isThrottling && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -318,7 +323,7 @@ export default function TrailingThrottle() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">
-                        Display Value: <span className="font-medium">{displayValue || 'Empty'}</span>
+                        Display Value: <span className="font-medium">{displayValueT || 'Empty'}</span>
                       </p>
                       <p className="text-xs text-gray-400 mt-1">Updates after 1s of inactivity</p>
                     </div>

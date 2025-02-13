@@ -404,7 +404,7 @@ export default function MemoryLeak() {
         </div>
       </div>
 
-      <StatsCard title="Memory Usage Comparison" stats={memoryStats} showMemory />
+      {/* <StatsCard title="Memory Usage Comparison" stats={memoryStats} showMemory /> */}
     </div>
   );
 }

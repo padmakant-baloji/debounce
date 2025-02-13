@@ -45,7 +45,7 @@ export default function TrailingThrottle() {
         eventCount: prev.solution.eventCount + 1,
       },
     }));
-  }, 3000, { leading: false, trailing: true });
+  }, 1000, { leading: false, trailing: true });
 
   useEffect(() => {
     window.addEventListener('resize', handleRegularResize);
@@ -114,7 +114,7 @@ export default function TrailingThrottle() {
     setTimeout(() => {
       setIsLogging(prev => ({ ...prev, throttled: false }));
     }, 300);
-  }, 3000, { 
+  }, 1000, { 
     leading: false, 
     trailing: true,
     onTrailing: () => {

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef } from "react";
 
 interface ThrottleOptions {
   leading?: boolean;
@@ -12,47 +12,43 @@ export function useThrottle<T extends (...args: any[]) => any>(
   options: ThrottleOptions = {}
 ) {
   const { leading = true, trailing = true, onTrailing } = options;
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastCallRef = useRef<number>(0);
+  const lastCallTimeRef = useRef<number | null>(null);
   const lastArgsRef = useRef<Parameters<T> | null>(null);
-  const hasTrailingCallRef = useRef(false);
+  const isThrottledRef = useRef(false);
+  const hasTrailingExecutedRef = useRef(false); // Track trailing execution
 
   return useCallback(
     (...args: Parameters<T>) => {
       const now = Date.now();
-      const remaining = wait - (now - lastCallRef.current);
+      const timeSinceLastCall = lastCallTimeRef.current ? now - lastCallTimeRef.current : null;
+      const shouldCallNow = leading && (!isThrottledRef.current || (timeSinceLastCall !== null && timeSinceLastCall >= wait));
 
-      // Store the latest arguments for trailing call
-      lastArgsRef.current = args;
-      hasTrailingCallRef.current = true;
+      if (shouldCallNow) {
+        fn(...args);
+        lastCallTimeRef.current = now;
+        isThrottledRef.current = true;
+        hasTrailingExecutedRef.current = false; // Reset since leading call happened
+      } else if (trailing) {
+        lastArgsRef.current = args;
+      }
 
-      // If we're at the beginning or past the wait period
-      if (remaining <= 0 || remaining > wait) {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-
-        lastCallRef.current = now;
-        if (leading || (trailing && hasTrailingCallRef.current)) {
-          hasTrailingCallRef.current = false;
-          fn(...args);
-        }
-      } 
-      // Set up trailing call if needed
-      else if (trailing && !timeoutRef.current) {
+      if (!timeoutRef.current) {
         timeoutRef.current = setTimeout(() => {
-          lastCallRef.current = Date.now();
           timeoutRef.current = null;
+          isThrottledRef.current = false;
 
-          if (hasTrailingCallRef.current && lastArgsRef.current) {
+          if (trailing && lastArgsRef.current) {
             fn(...lastArgsRef.current);
-            if (onTrailing) {
-              onTrailing();
+            lastArgsRef.current = null;
+
+            if (onTrailing && !hasTrailingExecutedRef.current) {
+              onTrailing(); // ✅ Only run if a trailing execution actually happened
+              hasTrailingExecutedRef.current = true;
             }
-            hasTrailingCallRef.current = false;
           }
-        }, remaining);
+        }, wait);
       }
     },
     [fn, wait, leading, trailing, onTrailing]
